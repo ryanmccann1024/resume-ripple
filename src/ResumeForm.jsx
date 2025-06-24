@@ -1,3 +1,5 @@
+import Button from "./components/Button";
+
 export default function ResumeForm({ data, onUpdate }) {
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -16,12 +18,14 @@ export default function ResumeForm({ data, onUpdate }) {
             <form className="space-y-6">
                 {/* Name */}
                 <div>
-                    <label className="block text-sm font-medium mb-1">Full Name</label>
+                    <label className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 tracking-tight">
+                        Full Name
+                    </label>
                     <input
                         name="name"
                         value={data.name}
                         onChange={handleChange}
-                        className="w-full rounded-md border px-4 py-2 dark:bg-slate-800 dark:border-slate-600"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                         placeholder="Jane Doe"
                     />
                 </div>
@@ -29,46 +33,46 @@ export default function ResumeForm({ data, onUpdate }) {
                 {/* Summary */}
                 <div>
                     <label className="block text-sm font-medium mb-1 flex justify-between items-center">
-                        <span>Professional Summary</span>
-                        <button
-                            type="button"
-                            onClick={handleRewriteSummary}
-                            className="text-blue-600 text-sm hover:underline"
-                        >
+                        <span className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 tracking-tight">Professional Summary</span>
+                        <Button type="button" onClick={handleRewriteSummary} variant="link">
                             Rewrite with AI
-                        </button>
+                        </Button>
                     </label>
                     <textarea
                         name="summary"
                         value={data.summary}
                         onChange={handleChange}
                         rows="3"
-                        className="w-full rounded-md border px-4 py-2 dark:bg-slate-800 dark:border-slate-600"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                         placeholder="A results-driven software engineer with experience in..."
                     />
                 </div>
 
                 {/* Experience */}
                 <div>
-                    <label className="block text-sm font-medium mb-1">Work Experience</label>
+                    <label className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 tracking-tight">
+                        Work Experience
+                    </label>
                     <textarea
                         name="experience"
                         value={data.experience}
                         onChange={handleChange}
                         rows="4"
-                        className="w-full rounded-md border px-4 py-2 dark:bg-slate-800 dark:border-slate-600"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                         placeholder="Software Engineer at XYZ Corp..."
                     />
                 </div>
 
                 {/* Skills */}
                 <div>
-                    <label className="block text-sm font-medium mb-1">Skills</label>
+                    <label className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 tracking-tight">
+                        Skills
+                    </label>
                     <input
                         name="skills"
                         value={data.skills}
                         onChange={handleChange}
-                        className="w-full rounded-md border px-4 py-2 dark:bg-slate-800 dark:border-slate-600"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                         placeholder="JavaScript, Python, React"
                     />
                 </div>

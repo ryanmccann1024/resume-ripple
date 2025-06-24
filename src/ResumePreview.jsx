@@ -1,4 +1,5 @@
 import html2pdf from "html2pdf.js";
+import Button from "./components/Button";
 
 export default function ResumePreview({ data }) {
     const { name, summary, experience, skills } = data;
@@ -19,12 +20,7 @@ export default function ResumePreview({ data }) {
         <section className="max-w-2xl mx-auto px-4 py-12 border-t border-gray-200 dark:border-slate-700">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Live Resume Preview</h2>
-                <button
-                    onClick={exportPDF}
-                    className="rounded bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition"
-                >
-                    Export PDF
-                </button>
+                <Button onClick={exportPDF}>Export PDF</Button>
             </div>
 
             <div

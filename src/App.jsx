@@ -26,7 +26,7 @@ function App() {
     }, [resumeData]);
 
     return (
-        <main className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
+        <main className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white transition-colors duration-500 animate-fadeIn">
             <Hero />
             <ResumeForm data={resumeData} onUpdate={setResumeData} />
             <ResumePreview data={resumeData} />
