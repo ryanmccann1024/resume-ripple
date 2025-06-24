@@ -1,6 +1,8 @@
 import html2pdf from "html2pdf.js";
 import Button from "./components/Button";
 import { motion, AnimatePresence } from "framer-motion";
+import { Document, Packer, Paragraph, TextRun } from "docx";
+import { saveAs } from "file-saver";
 
 export default function ResumePreview({ data, theme, sectionOrder, visibleSections }) {
     const { name, summary, experience, skills, education, links, certifications } = data;
@@ -17,11 +19,81 @@ export default function ResumePreview({ data, theme, sectionOrder, visibleSectio
         html2pdf().set(options).from(element).save();
     };
 
+    const exportDOCX = () => {
+        const sections = sectionOrder.filter((key) => data[key] && visibleSections[key]);
+
+        const titleMap = {
+            summary: "Summary",
+            experience: "Experience",
+            skills: "Skills",
+            education: "Education",
+            links: "Links",
+            certifications: "Certifications & Awards",
+        };
+
+        const doc = new Document({
+            sections: [
+                {
+                    children: [
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: name || "Resume",
+                                    bold: true,
+                                    size: 32,
+                                }),
+                            ],
+                            spacing: { after: 300 },
+                        }),
+                        ...sections.flatMap((key) => {
+                            const title = new Paragraph({
+                                text: titleMap[key],
+                                heading: "Heading2",
+                                spacing: { after: 100 },
+                            });
+
+                            const content =
+                                key === "links"
+                                    ? data.links.split(",").map((link) =>
+                                        new Paragraph({
+                                            text: link.trim(),
+                                            style: "Normal",
+                                            spacing: { after: 100 },
+                                        })
+                                    )
+                                    : key === "certifications"
+                                        ? data.certifications.split(",").map((item) =>
+                                            new Paragraph({
+                                                text: item.trim(),
+                                                bullet: { level: 0 },
+                                            })
+                                        )
+                                        : [
+                                            new Paragraph({
+                                                text: data[key],
+                                                style: "Normal",
+                                                spacing: { after: 200 },
+                                            }),
+                                        ];
+
+                            return [title, ...content];
+                        }),
+                    ],
+                },
+            ],
+        });
+
+        Packer.toBlob(doc).then((blob) => {
+            saveAs(blob, `${name || "resume"}.docx`);
+        });
+    };
+
     return (
         <section className="max-w-2xl mx-auto px-4 py-12 border-t border-gray-200 dark:border-slate-700">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Live Resume Preview</h2>
                 <Button onClick={exportPDF}>Export PDF</Button>
+                <Button onClick={exportDOCX}>Export DOCX</Button>
             </div>
 
             <div
