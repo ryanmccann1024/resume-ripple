@@ -76,6 +76,52 @@ export default function ResumeForm({ data, onUpdate }) {
                         placeholder="JavaScript, Python, React"
                     />
                 </div>
+
+                {/* Education */}
+                <div>
+                    <label className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 tracking-tight">
+                        Education
+                    </label>
+                    <textarea
+                        name="education"
+                        value={data.education}
+                        onChange={handleChange}
+                        rows="3"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="B.S. in Computer Science, University XYZ, 2020"
+                    />
+                </div>
+
+                {/* Links */}
+                <div>
+                    <label className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 tracking-tight">
+                        Links
+                    </label>
+                    <textarea
+                        name="links"
+                        value={data.links}
+                        onChange={handleChange}
+                        rows="2"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="https://github.com/yourname, https://yourportfolio.com"
+                    />
+                </div>
+
+                {/* Certifications & Awards */}
+                <div>
+                    <label className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 tracking-tight">
+                        Certifications & Awards
+                    </label>
+                    <textarea
+                        name="certifications"
+                        value={data.certifications}
+                        onChange={handleChange}
+                        rows="3"
+                        className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="AWS Certified Developer, Best Intern Award at Company X..."
+                    />
+                </div>
+
             </form>
         </section>
     );

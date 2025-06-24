@@ -2,7 +2,7 @@ import html2pdf from "html2pdf.js";
 import Button from "./components/Button";
 
 export default function ResumePreview({ data, theme }) {
-    const { name, summary, experience, skills } = data;
+    const { name, summary, experience, skills, education, links, certifications } = data;
 
     const exportPDF = () => {
         const element = document.getElementById("resume-content");
@@ -73,6 +73,67 @@ export default function ResumePreview({ data, theme }) {
                         <p className="text-gray-800 dark:text-gray-200">{skills}</p>
                     </section>
                 )}
+
+                {education && (
+                    <section>
+                        <h3
+                            className={`text-lg font-semibold mb-1 ${
+                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
+                            }`}
+                        >
+                            Education
+                        </h3>
+                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{education}</p>
+                    </section>
+                )}
+
+                {links && (
+                    <section>
+                        <h3
+                            className={`text-lg font-semibold mb-1 ${
+                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
+                            }`}
+                        >
+                            Links
+                        </h3>
+                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
+                            {links
+                                .split(",")
+                                .map((link, i) => (
+                                    <li key={i}>
+                                        <a
+                                            href={link.trim()}
+                                            className="text-blue-600 hover:underline break-words"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {link.trim()}
+                                        </a>
+                                    </li>
+                                ))}
+                        </ul>
+                    </section>
+                )}
+
+                {certifications && (
+                    <section>
+                        <h3
+                            className={`text-lg font-semibold mb-1 ${
+                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
+                            }`}
+                        >
+                            Certifications & Awards
+                        </h3>
+                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
+                            {certifications
+                                .split(",")
+                                .map((item, i) => (
+                                    <li key={i}>{item.trim()}</li>
+                                ))}
+                        </ul>
+                    </section>
+                )}
+
             </div>
         </section>
     );

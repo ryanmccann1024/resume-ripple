@@ -10,6 +10,9 @@ function App() {
         summary: "",
         experience: "",
         skills: "",
+        education: "",
+        links: "",
+        certifications: "",
     });
 
     const [theme, setTheme] = useState("default");
