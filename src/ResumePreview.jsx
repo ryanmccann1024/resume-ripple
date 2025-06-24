@@ -1,7 +1,8 @@
 import html2pdf from "html2pdf.js";
 import Button from "./components/Button";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function ResumePreview({ data, theme, sectionOrder }) {
+export default function ResumePreview({ data, theme, sectionOrder, visibleSections }) {
     const { name, summary, experience, skills, education, links, certifications } = data;
 
     const exportPDF = () => {
@@ -35,54 +36,61 @@ export default function ResumePreview({ data, theme, sectionOrder }) {
             >
                 {name && <h1 className="text-3xl font-bold">{name}</h1>}
 
-                {sectionOrder.map((sectionKey) => {
-                    if (!data[sectionKey]) return null;
+                <AnimatePresence mode="popLayout">
+                    {sectionOrder.map((sectionKey) => {
+                        if (!data[sectionKey] || !visibleSections[sectionKey]) return null;
 
-                    const titleMap = {
-                        summary: "Summary",
-                        experience: "Experience",
-                        skills: "Skills",
-                        education: "Education",
-                        links: "Links",
-                        certifications: "Certifications & Awards",
-                    };
+                        const titleMap = {
+                            summary: "Summary",
+                            experience: "Experience",
+                            skills: "Skills",
+                            education: "Education",
+                            links: "Links",
+                            certifications: "Certifications & Awards",
+                        };
 
-                    const content = sectionKey === "links"
-                        ? (
-                            <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                                {data.links.split(",").map((link, i) => (
-                                    <li key={i}>
-                                        <a href={link.trim()} className="text-blue-600 hover:underline break-words" target="_blank" rel="noopener noreferrer">
-                                            {link.trim()}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        )
-                        : sectionKey === "certifications"
+                        const content = sectionKey === "links"
                             ? (
                                 <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                                    {data.certifications.split(",").map((item, i) => (
-                                        <li key={i}>{item.trim()}</li>
+                                    {data.links.split(",").map((link, i) => (
+                                        <li key={i}>
+                                            <a href={link.trim()} className="text-blue-600 hover:underline break-words" target="_blank" rel="noopener noreferrer">
+                                                {link.trim()}
+                                            </a>
+                                        </li>
                                     ))}
                                 </ul>
                             )
-                            : (
-                                <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
-                                    {data[sectionKey]}
-                                </p>
-                            );
+                            : sectionKey === "certifications"
+                                ? (
+                                    <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
+                                        {data.certifications.split(",").map((item, i) => (
+                                            <li key={i}>{item.trim()}</li>
+                                        ))}
+                                    </ul>
+                                )
+                                : (
+                                    <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                                        {data[sectionKey]}
+                                    </p>
+                                );
 
-                    return (
-                        <section key={sectionKey}>
-                            <h3 className={`text-lg font-semibold mb-1 ${theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""}`}>
-                                {titleMap[sectionKey]}
-                            </h3>
-                            {content}
-                        </section>
-                    );
-                })}
-
+                        return (
+                            <motion.section
+                                key={sectionKey}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <h3 className={`text-lg font-semibold mb-1 ${theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""}`}>
+                                    {titleMap[sectionKey]}
+                                </h3>
+                                {content}
+                            </motion.section>
+                        );
+                    })}
+                </AnimatePresence>
 
             </div>
         </section>

@@ -28,6 +28,15 @@ function App() {
         certifications: "",
     });
 
+    const [visibleSections, setVisibleSections] = useState({
+        summary: true,
+        experience: true,
+        skills: true,
+        education: true,
+        links: true,
+        certifications: true,
+    });
+
     const [theme, setTheme] = useState("default");
 
     const [sectionOrder, setSectionOrder] = useState([
@@ -77,6 +86,30 @@ function App() {
                 </div>
             </div>
 
+            <h3 className="text-sm font-semibold text-center text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-3">
+                Toggle Sections
+            </h3>
+            <div className="flex flex-wrap justify-center gap-2">
+                {Object.entries(visibleSections).map(([key, isVisible]) => (
+                    <button
+                        key={key}
+                        onClick={() =>
+                            setVisibleSections((prev) => ({
+                                ...prev,
+                                [key]: !prev[key],
+                            }))
+                        }
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-150 ${
+                            isVisible
+                                ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                                : "bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300 border-gray-300 hover:bg-gray-200"
+                        }`}
+                    >
+                        {key.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                    </button>
+                ))}
+            </div>
+
             <div className="max-w-2xl mx-auto px-4 py-6">
                 <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">
                     Reorder Resume Sections
@@ -100,7 +133,7 @@ function App() {
                 </DndContext>
             </div>
 
-            <ResumePreview data={resumeData} theme={theme} sectionOrder={sectionOrder} />
+            <ResumePreview data={resumeData} theme={theme} sectionOrder={sectionOrder} visibleSections={visibleSections} />
             <CoverLetterForm />
         </main>
     );
