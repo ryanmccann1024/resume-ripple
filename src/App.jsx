@@ -3,6 +3,19 @@ import Hero from "./Hero.jsx";
 import ResumeForm from "./ResumeForm.jsx";
 import ResumePreview from "./ResumePreview.jsx";
 import CoverLetterForm from "./CoverLetterForm.jsx";
+import SortableItem from "./components/SortableItem.jsx"
+
+import {
+    DndContext,
+    closestCenter,
+    useSensor,
+    useSensors,
+    PointerSensor,
+} from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 
 function App() {
     const [resumeData, setResumeData] = useState({
@@ -64,41 +77,27 @@ function App() {
                 </div>
             </div>
 
-            <div className="max-w-2xl mx-auto px-4 py-6 space-y-2">
+            <div className="max-w-2xl mx-auto px-4 py-6">
                 <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">
                     Reorder Resume Sections
                 </h3>
-                {sectionOrder.map((section, index) => (
-                    <div key={section} className="flex items-center justify-between bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded px-3 py-2">
-                        <span className="capitalize text-sm">{section.replace("_", " ")}</span>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => {
-                                    if (index === 0) return;
-                                    const newOrder = [...sectionOrder];
-                                    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
-                                    setSectionOrder(newOrder);
-                                }}
-                                className="text-xs text-blue-600 hover:underline disabled:text-gray-400"
-                                disabled={index === 0}
-                            >
-                                ↑
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (index === sectionOrder.length - 1) return;
-                                    const newOrder = [...sectionOrder];
-                                    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
-                                    setSectionOrder(newOrder);
-                                }}
-                                className="text-xs text-blue-600 hover:underline disabled:text-gray-400"
-                                disabled={index === sectionOrder.length - 1}
-                            >
-                                ↓
-                            </button>
-                        </div>
-                    </div>
-                ))}
+
+                <DndContext
+                    collisionDetection={closestCenter}
+                    onDragEnd={({ active, over }) => {
+                        if (active.id !== over?.id) {
+                            const oldIndex = sectionOrder.indexOf(active.id);
+                            const newIndex = sectionOrder.indexOf(over.id);
+                            setSectionOrder(arrayMove(sectionOrder, oldIndex, newIndex));
+                        }
+                    }}
+                >
+                    <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
+                        {sectionOrder.map((section) => (
+                            <SortableItem key={section} id={section} />
+                        ))}
+                    </SortableContext>
+                </DndContext>
             </div>
 
             <ResumePreview data={resumeData} theme={theme} sectionOrder={sectionOrder} />
