@@ -1,7 +1,7 @@
 import html2pdf from "html2pdf.js";
 import Button from "./components/Button";
 
-export default function ResumePreview({ data }) {
+export default function ResumePreview({ data, theme }) {
     const { name, summary, experience, skills } = data;
 
     const exportPDF = () => {
@@ -25,27 +25,51 @@ export default function ResumePreview({ data }) {
 
             <div
                 id="resume-content"
-                className="bg-white dark:bg-slate-800 shadow rounded-lg p-6 space-y-6 print:bg-white print:text-black print:shadow-none"
+                className={`bg-white dark:bg-slate-800 shadow rounded-lg p-6 space-y-6 print:bg-white print:text-black print:shadow-none ${
+                    theme === "minimal"
+                        ? "text-sm leading-snug"
+                        : theme === "modern"
+                            ? "font-sans text-base leading-relaxed"
+                            : ""
+                }`}
             >
                 {name && <h1 className="text-3xl font-bold">{name}</h1>}
 
                 {summary && (
                     <section>
-                        <h3 className="text-lg font-semibold mb-1">Summary</h3>
+                        <h3
+                            className={`text-lg font-semibold mb-1 ${
+                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
+                            }`}
+                        >
+                            Summary
+                        </h3>
                         <p className="text-gray-800 dark:text-gray-200">{summary}</p>
                     </section>
                 )}
 
                 {experience && (
                     <section>
-                        <h3 className="text-lg font-semibold mb-1">Experience</h3>
+                        <h3
+                            className={`text-lg font-semibold mb-1 ${
+                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
+                            }`}
+                        >
+                            Experience
+                        </h3>
                         <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{experience}</p>
                     </section>
                 )}
 
                 {skills && (
                     <section>
-                        <h3 className="text-lg font-semibold mb-1">Skills</h3>
+                        <h3
+                            className={`text-lg font-semibold mb-1 ${
+                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
+                            }`}
+                        >
+                            Skills
+                        </h3>
                         <p className="text-gray-800 dark:text-gray-200">{skills}</p>
                     </section>
                 )}
