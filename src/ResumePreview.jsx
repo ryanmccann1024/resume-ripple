@@ -1,7 +1,7 @@
 import html2pdf from "html2pdf.js";
 import Button from "./components/Button";
 
-export default function ResumePreview({ data, theme }) {
+export default function ResumePreview({ data, theme, sectionOrder }) {
     const { name, summary, experience, skills, education, links, certifications } = data;
 
     const exportPDF = () => {
@@ -35,104 +35,54 @@ export default function ResumePreview({ data, theme }) {
             >
                 {name && <h1 className="text-3xl font-bold">{name}</h1>}
 
-                {summary && (
-                    <section>
-                        <h3
-                            className={`text-lg font-semibold mb-1 ${
-                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
-                            }`}
-                        >
-                            Summary
-                        </h3>
-                        <p className="text-gray-800 dark:text-gray-200">{summary}</p>
-                    </section>
-                )}
+                {sectionOrder.map((sectionKey) => {
+                    if (!data[sectionKey]) return null;
 
-                {experience && (
-                    <section>
-                        <h3
-                            className={`text-lg font-semibold mb-1 ${
-                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
-                            }`}
-                        >
-                            Experience
-                        </h3>
-                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{experience}</p>
-                    </section>
-                )}
+                    const titleMap = {
+                        summary: "Summary",
+                        experience: "Experience",
+                        skills: "Skills",
+                        education: "Education",
+                        links: "Links",
+                        certifications: "Certifications & Awards",
+                    };
 
-                {skills && (
-                    <section>
-                        <h3
-                            className={`text-lg font-semibold mb-1 ${
-                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
-                            }`}
-                        >
-                            Skills
-                        </h3>
-                        <p className="text-gray-800 dark:text-gray-200">{skills}</p>
-                    </section>
-                )}
-
-                {education && (
-                    <section>
-                        <h3
-                            className={`text-lg font-semibold mb-1 ${
-                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
-                            }`}
-                        >
-                            Education
-                        </h3>
-                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">{education}</p>
-                    </section>
-                )}
-
-                {links && (
-                    <section>
-                        <h3
-                            className={`text-lg font-semibold mb-1 ${
-                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
-                            }`}
-                        >
-                            Links
-                        </h3>
-                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                            {links
-                                .split(",")
-                                .map((link, i) => (
+                    const content = sectionKey === "links"
+                        ? (
+                            <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
+                                {data.links.split(",").map((link, i) => (
                                     <li key={i}>
-                                        <a
-                                            href={link.trim()}
-                                            className="text-blue-600 hover:underline break-words"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
+                                        <a href={link.trim()} className="text-blue-600 hover:underline break-words" target="_blank" rel="noopener noreferrer">
                                             {link.trim()}
                                         </a>
                                     </li>
                                 ))}
-                        </ul>
-                    </section>
-                )}
+                            </ul>
+                        )
+                        : sectionKey === "certifications"
+                            ? (
+                                <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
+                                    {data.certifications.split(",").map((item, i) => (
+                                        <li key={i}>{item.trim()}</li>
+                                    ))}
+                                </ul>
+                            )
+                            : (
+                                <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                                    {data[sectionKey]}
+                                </p>
+                            );
 
-                {certifications && (
-                    <section>
-                        <h3
-                            className={`text-lg font-semibold mb-1 ${
-                                theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""
-                            }`}
-                        >
-                            Certifications & Awards
-                        </h3>
-                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                            {certifications
-                                .split(",")
-                                .map((item, i) => (
-                                    <li key={i}>{item.trim()}</li>
-                                ))}
-                        </ul>
-                    </section>
-                )}
+                    return (
+                        <section key={sectionKey}>
+                            <h3 className={`text-lg font-semibold mb-1 ${theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""}`}>
+                                {titleMap[sectionKey]}
+                            </h3>
+                            {content}
+                        </section>
+                    );
+                })}
+
 
             </div>
         </section>
