@@ -4,11 +4,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { saveAs } from "file-saver";
 
-export default function ResumePreview({ data, theme, sectionOrder, visibleSections }) {
-    const { name, summary, experience, skills, education, links, certifications } = data;
+import {
+    DndContext,
+    closestCenter,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    arrayMove,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import SortableItem from "./components/SortableItem";
+import ToggleSwitch from "./components/ToggleSwitch";
+
+export default function ResumePreview({
+                                          data,
+                                          theme,
+                                          sectionOrder,
+                                          visibleSections,
+                                          setSectionOrder,
+                                          toggleSectionVisibility,
+                                      }) {
+    const { name } = data;
 
     const exportPDF = () => {
-        const element = document.getElementById("resume-content");
+        const element = document.getElementById("resume-content").cloneNode(true);
+        element.querySelectorAll(".screen-only").forEach(el => el.remove());
+        element.querySelectorAll(".hidden-section").forEach(el => el.remove());
+
         const options = {
             margin: 0.5,
             filename: `${name || "resume"}.pdf`,
@@ -20,7 +43,9 @@ export default function ResumePreview({ data, theme, sectionOrder, visibleSectio
     };
 
     const exportDOCX = () => {
-        const sections = sectionOrder.filter((key) => data[key] && visibleSections[key]);
+        const sections = sectionOrder.filter(
+            (key) => data[key] && visibleSections[key]
+        );
 
         const titleMap = {
             summary: "Summary",
@@ -89,8 +114,8 @@ export default function ResumePreview({ data, theme, sectionOrder, visibleSectio
     };
 
     return (
-        <section className="max-w-2xl mx-auto px-4 py-12 border-t border-gray-200 dark:border-slate-700">
-            <div className="flex justify-between items-center mb-6">
+        <section className="max-w-2xl mx-auto px-4 py-12">
+            <div className="flex justify-between items-center mb-6 screen-only">
                 <h2 className="text-2xl font-bold">Live Resume Preview</h2>
                 <Button onClick={exportPDF}>Export PDF</Button>
                 <Button onClick={exportDOCX}>Export DOCX</Button>
@@ -108,62 +133,95 @@ export default function ResumePreview({ data, theme, sectionOrder, visibleSectio
             >
                 {name && <h1 className="text-3xl font-bold">{name}</h1>}
 
-                <AnimatePresence mode="popLayout">
-                    {sectionOrder.map((sectionKey) => {
-                        if (!data[sectionKey] || !visibleSections[sectionKey]) return null;
+                <DndContext
+                    collisionDetection={closestCenter}
+                    onDragEnd={({ active, over }) => {
+                        if (active.id !== over?.id) {
+                            const oldIndex = sectionOrder.indexOf(active.id);
+                            const newIndex = sectionOrder.indexOf(over.id);
+                            setSectionOrder(arrayMove(sectionOrder, oldIndex, newIndex));
+                        }
+                    }}
+                >
+                    <SortableContext
+                        items={sectionOrder}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <AnimatePresence mode="popLayout">
+                            {sectionOrder.map((sectionKey) => {
+                                if (!data[sectionKey]) return null;
 
-                        const titleMap = {
-                            summary: "Summary",
-                            experience: "Experience",
-                            skills: "Skills",
-                            education: "Education",
-                            links: "Links",
-                            certifications: "Certifications & Awards",
-                        };
+                                const titleMap = {
+                                    summary: "Summary",
+                                    experience: "Experience",
+                                    skills: "Skills",
+                                    education: "Education",
+                                    links: "Links",
+                                    certifications: "Certifications & Awards",
+                                };
 
-                        const content = sectionKey === "links"
-                            ? (
-                                <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                                    {data.links.split(",").map((link, i) => (
-                                        <li key={i}>
-                                            <a href={link.trim()} className="text-blue-600 hover:underline break-words" target="_blank" rel="noopener noreferrer">
-                                                {link.trim()}
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )
-                            : sectionKey === "certifications"
-                                ? (
-                                    <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                                        {data.certifications.split(",").map((item, i) => (
-                                            <li key={i}>{item.trim()}</li>
-                                        ))}
-                                    </ul>
-                                )
-                                : (
-                                    <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
-                                        {data[sectionKey]}
-                                    </p>
+                                const content =
+                                    sectionKey === "links" ? (
+                                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
+                                            {data.links.split(",").map((link, i) => (
+                                                <li key={i}>
+                                                    <a
+                                                        href={link.trim()}
+                                                        className="text-blue-600 hover:underline break-words"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        {link.trim()}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : sectionKey === "certifications" ? (
+                                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
+                                            {data.certifications.split(",").map((item, i) => (
+                                                <li key={i}>{item.trim()}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                                            {data[sectionKey]}
+                                        </p>
+                                    );
+
+                                return (
+                                    <SortableItem key={sectionKey} id={sectionKey}>
+                                        <motion.section
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            transition={{ duration: 0.2 }}
+                                            className={!visibleSections[sectionKey] ? "opacity-50 hidden-section" : ""}
+                                        >
+                                            <div className="flex justify-between items-center mb-1">
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-gray-400 screen-only">☰</span>
+                                                    <h3 className={`text-lg font-semibold ${theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""}`}>
+                                                        {titleMap[sectionKey]}
+                                                    </h3>
+                                                </div>
+                                                <ToggleSwitch
+                                                    checked={visibleSections[sectionKey]}
+                                                    onChange={() => toggleSectionVisibility(sectionKey)}
+                                                />
+                                            </div>
+
+                                            {visibleSections[sectionKey] ? (
+                                                content
+                                            ) : (
+                                                <p className="italic text-gray-400">(Hidden)</p>
+                                            )}
+                                        </motion.section>
+                                    </SortableItem>
                                 );
-
-                        return (
-                            <motion.section
-                                key={sectionKey}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <h3 className={`text-lg font-semibold mb-1 ${theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""}`}>
-                                    {titleMap[sectionKey]}
-                                </h3>
-                                {content}
-                            </motion.section>
-                        );
-                    })}
-                </AnimatePresence>
-
+                            })}
+                        </AnimatePresence>
+                    </SortableContext>
+                </DndContext>
             </div>
         </section>
     );

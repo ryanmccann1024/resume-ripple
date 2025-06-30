@@ -6,6 +6,12 @@ body {
   @apply bg-white text-gray-900 dark:bg-slate-900 dark:text-white transition-colors duration-300;
 }
 
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+}
+
 @keyframes ripple {
   from {
     opacity: 0.3;
