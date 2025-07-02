@@ -6,12 +6,18 @@ body {
   @apply bg-white text-gray-900 dark:bg-slate-900 dark:text-white transition-colors duration-300;
 }
 
+/* ----------  Hide helpers & hidden sections in exported files  ---------- */
 @media print {
   .screen-only {
     display: none !important;
   }
+
+  .hidden-section {
+    display: none !important;
+  }
 }
 
+/* ----------  Misc. app-wide animations/utilities  ---------- */
 @keyframes ripple {
   from {
     opacity: 0.3;
@@ -26,11 +32,10 @@ body {
 @layer utilities {
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0);  }
   }
 
   .animate-fadeIn {
     animation: fadeIn 0.6s ease-out both;
   }
-
 }

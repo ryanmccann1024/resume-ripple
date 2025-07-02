@@ -1,8 +1,5 @@
-import html2pdf from "html2pdf.js";
 import Button from "./components/Button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Document, Packer, Paragraph, TextRun } from "docx";
-import { saveAs } from "file-saver";
 
 import {
     DndContext,
@@ -17,6 +14,12 @@ import {
 import SortableItem from "./components/SortableItem";
 import ToggleSwitch from "./components/ToggleSwitch";
 
+/* centralised export helpers */
+import {
+    exportResumePDF,
+    exportResumeDOCX,
+} from "./utils/exportResume";
+
 export default function ResumePreview({
                                           data,
                                           theme,
@@ -27,98 +30,26 @@ export default function ResumePreview({
                                       }) {
     const { name } = data;
 
-    const exportPDF = () => {
-        const element = document.getElementById("resume-content").cloneNode(true);
-        element.querySelectorAll(".screen-only").forEach(el => el.remove());
-        element.querySelectorAll(".hidden-section").forEach(el => el.remove());
-
-        const options = {
-            margin: 0.5,
-            filename: `${name || "resume"}.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-        };
-        html2pdf().set(options).from(element).save();
-    };
-
-    const exportDOCX = () => {
-        const sections = sectionOrder.filter(
-            (key) => data[key] && visibleSections[key]
+    /* --------------------  EXPORT HANDLERS  -------------------- */
+    // Give React one paint to commit setState triggered by the last toggle.
+    const handlePDF = () =>
+        requestAnimationFrame(() =>
+            exportResumePDF({ data, sectionOrder, visibleSections, theme })
         );
 
-        const titleMap = {
-            summary: "Summary",
-            experience: "Experience",
-            skills: "Skills",
-            education: "Education",
-            links: "Links",
-            certifications: "Certifications & Awards",
-        };
+    const handleDOCX = () =>
+        requestAnimationFrame(() =>
+            exportResumeDOCX({ data, sectionOrder, visibleSections })
+        );
 
-        const doc = new Document({
-            sections: [
-                {
-                    children: [
-                        new Paragraph({
-                            children: [
-                                new TextRun({
-                                    text: name || "Resume",
-                                    bold: true,
-                                    size: 32,
-                                }),
-                            ],
-                            spacing: { after: 300 },
-                        }),
-                        ...sections.flatMap((key) => {
-                            const title = new Paragraph({
-                                text: titleMap[key],
-                                heading: "Heading2",
-                                spacing: { after: 100 },
-                            });
-
-                            const content =
-                                key === "links"
-                                    ? data.links.split(",").map((link) =>
-                                        new Paragraph({
-                                            text: link.trim(),
-                                            style: "Normal",
-                                            spacing: { after: 100 },
-                                        })
-                                    )
-                                    : key === "certifications"
-                                        ? data.certifications.split(",").map((item) =>
-                                            new Paragraph({
-                                                text: item.trim(),
-                                                bullet: { level: 0 },
-                                            })
-                                        )
-                                        : [
-                                            new Paragraph({
-                                                text: data[key],
-                                                style: "Normal",
-                                                spacing: { after: 200 },
-                                            }),
-                                        ];
-
-                            return [title, ...content];
-                        }),
-                    ],
-                },
-            ],
-        });
-
-        Packer.toBlob(doc).then((blob) => {
-            saveAs(blob, `${name || "resume"}.docx`);
-        });
-    };
-
+    /* ---------------------------  UI  --------------------------- */
     return (
         <section className="max-w-2xl mx-auto px-4 py-12">
+            {/* Header & export buttons – screen-only so they never hit the PDF */}
             <div className="flex justify-between items-center mb-6 screen-only">
                 <h2 className="text-2xl font-bold">Live Resume Preview</h2>
-                <Button onClick={exportPDF}>Export PDF</Button>
-                <Button onClick={exportDOCX}>Export DOCX</Button>
+                <Button onClick={handlePDF}>Export PDF</Button>
+                <Button onClick={handleDOCX}>Export DOCX</Button>
             </div>
 
             <div
@@ -189,25 +120,45 @@ export default function ResumePreview({
                                     );
 
                                 return (
-                                    <SortableItem key={sectionKey} id={sectionKey}>
+                                    <SortableItem
+                                        key={
+                                            sectionKey + (visibleSections[sectionKey] ? "-on" : "-off")
+                                        }
+                                        id={sectionKey}
+                                    >
                                         <motion.section
+                                            data-section={sectionKey}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -10 }}
                                             transition={{ duration: 0.2 }}
-                                            className={!visibleSections[sectionKey] ? "opacity-50 hidden-section" : ""}
+                                            className={
+                                                !visibleSections[sectionKey]
+                                                    ? "opacity-50 hidden-section"
+                                                    : ""
+                                            }
                                         >
                                             <div className="flex justify-between items-center mb-1">
                                                 <div className="flex items-center gap-1">
                                                     <span className="text-gray-400 screen-only">☰</span>
-                                                    <h3 className={`text-lg font-semibold ${theme === "modern" ? "uppercase tracking-wide text-blue-600" : ""}`}>
+                                                    <h3
+                                                        className={`text-lg font-semibold ${
+                                                            theme === "modern"
+                                                                ? "uppercase tracking-wide text-blue-600"
+                                                                : ""
+                                                        }`}
+                                                    >
                                                         {titleMap[sectionKey]}
                                                     </h3>
                                                 </div>
-                                                <ToggleSwitch
-                                                    checked={visibleSections[sectionKey]}
-                                                    onChange={() => toggleSectionVisibility(sectionKey)}
-                                                />
+
+                                                {/* Toggle wrapped in screen-only so it never lands in the export */}
+                                                <div className="screen-only">
+                                                    <ToggleSwitch
+                                                        checked={visibleSections[sectionKey]}
+                                                        onChange={() => toggleSectionVisibility(sectionKey)}
+                                                    />
+                                                </div>
                                             </div>
 
                                             {visibleSections[sectionKey] ? (
