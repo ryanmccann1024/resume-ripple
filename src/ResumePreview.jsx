@@ -133,40 +133,50 @@ export default function ResumePreview({
                                         key={sectionKey}
                                         id={sectionKey}
                                     >
-                                        <motion.section
-                                            data-section={sectionKey}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.4, ease: "easeInOut" }}
-                                            style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
-                                        >
-                                            <div className="flex justify-between items-center mb-1">
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-gray-400 screen-only cursor-grab">
-                                                        ☰
-                                                    </span>
-                                                    <h3
-                                                        className={`text-lg font-semibold ${
-                                                            theme === "modern"
-                                                                ? "uppercase tracking-wide text-blue-600"
-                                                                : ""
-                                                        }`}
-                                                    >
-                                                        {titleMap[sectionKey]}
-                                                    </h3>
+                                        {(listeners) => (
+                                            <motion.section
+                                                data-section={sectionKey}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                transition={{ duration: 0.4, ease: "easeInOut" }}
+                                                style={{
+                                                    breakInside: "avoid",
+                                                    pageBreakInside: "avoid",
+                                                }}
+                                            >
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <div className="flex items-center gap-1">
+                                                        <span
+                                                            className="text-gray-400 screen-only cursor-grab"
+                                                            {...listeners}
+                                                        >
+                                                            ☰
+                                                        </span>
+                                                        <h3
+                                                            className={`text-lg font-semibold ${
+                                                                theme === "modern"
+                                                                    ? "uppercase tracking-wide text-blue-600"
+                                                                    : ""
+                                                            }`}
+                                                        >
+                                                            {titleMap[sectionKey]}
+                                                        </h3>
+                                                    </div>
+
+                                                    <div className="screen-only">
+                                                        <ToggleSwitch
+                                                            checked={true}
+                                                            onChange={() =>
+                                                                toggleSectionVisibility(sectionKey)
+                                                            }
+                                                        />
+                                                    </div>
                                                 </div>
 
-                                                <div className="screen-only">
-                                                    <ToggleSwitch
-                                                        checked={true}
-                                                        onChange={() => toggleSectionVisibility(sectionKey)}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {renderContent(sectionKey)}
-                                        </motion.section>
+                                                {renderContent(sectionKey)}
+                                            </motion.section>
+                                        )}
                                     </SortableItem>
                                 );
                             })}

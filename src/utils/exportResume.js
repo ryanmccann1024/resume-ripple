@@ -23,6 +23,7 @@ function cloneResume() {
     // Remove UI controls
     clone.querySelectorAll(".screen-only").forEach((el) => el.remove());
 
+    // Manual bullet patch for PDF only
     clone.querySelectorAll("ul").forEach(ul => {
         ul.querySelectorAll("li").forEach(li => {
             const p = document.createElement("p");
@@ -36,13 +37,14 @@ function cloneResume() {
 
     clone.querySelectorAll(".hidden-section").forEach((el) => el.remove());
 
+    // Styling for any remaining list items (should be none, but safe)
     clone.querySelectorAll("li").forEach((li) => {
         li.style.marginBottom = "0.4em";
         li.style.display = "list-item";
         li.style.lineHeight = "1.4";
     });
 
-    // Inject page-break style to children
+    // Page break safety
     clone.querySelectorAll(":scope > *").forEach((el) => {
         el.style.breakInside = "avoid";
         el.style.pageBreakInside = "avoid";
@@ -59,10 +61,10 @@ export function exportResumePDF({ data, sectionOrder, visibleSections, theme }) 
         .set({
             margin: 0.5,
             filename: `${data.name || "resume"}.pdf`,
-            image: { type: "jpeg", quality: 1.0 }, // Max image quality
-            html2canvas: { scale: 3, useCORS: true }, // Higher DPI
+            image: { type: "jpeg", quality: 1.0 },
+            html2canvas: { scale: 3, useCORS: true },
             jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-            pagebreak: { mode: ["avoid-all", "css", "legacy"] }, // Smart page breaks
+            pagebreak: { mode: ["avoid-all", "css", "legacy"] },
         })
         .from(node)
         .save();
@@ -108,22 +110,10 @@ export function exportResumeDOCX({ data, sectionOrder, visibleSections }) {
             );
         }
 
-        // Normal paragraphs
-        sec.querySelectorAll("p").forEach((p) => {
-            const text = p.textContent.trim();
-            if (text) {
-                children.push(
-                    new Paragraph({
-                        text,
-                        spacing: { after: 100 },
-                    })
-                );
-            }
-        });
-
-        // Bullet lists
-        sec.querySelectorAll("ul").forEach((ul) => {
-            ul.querySelectorAll("li").forEach((li) => {
+        // Prefer bullet lists if present
+        const ulList = sec.querySelector("ul");
+        if (ulList) {
+            ulList.querySelectorAll("li").forEach((li) => {
                 const text = li.textContent.trim();
                 if (text) {
                     children.push(
@@ -135,7 +125,20 @@ export function exportResumeDOCX({ data, sectionOrder, visibleSections }) {
                     );
                 }
             });
-        });
+        } else {
+            // Otherwise, normal paragraphs
+            sec.querySelectorAll("p").forEach((p) => {
+                const text = p.textContent.trim();
+                if (text) {
+                    children.push(
+                        new Paragraph({
+                            text,
+                            spacing: { after: 100 },
+                        })
+                    );
+                }
+            });
+        }
     });
 
     const doc = new Document({

@@ -70,21 +70,10 @@ function App() {
 
 
     const toggleSectionVisibility = (key) => {
-        setVisibleSections((prevVisible) => {
-            const isNowVisible = !prevVisible[key];
-
-            const filtered = sectionOrder.filter((item) => item !== key);
-            const newOrder = isNowVisible
-                ? [key, ...filtered]
-                : [...filtered, key];
-
-            setSectionOrder(newOrder);
-
-            return {
-                ...prevVisible,
-                [key]: isNowVisible,
-            };
-        });
+        setVisibleSections((prevVisible) => ({
+            ...prevVisible,
+            [key]: !prevVisible[key],
+        }));
     };
 
     console.log("🚀 Render: sectionOrder", sectionOrder);
