@@ -5,39 +5,22 @@ import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import { Bold, Italic, List } from "lucide-react";
 
-// --- Custom list extensions that carry Tailwind classes so bullets actually show ---
 const TailwindBulletList = BulletList.extend({
     renderHTML({ HTMLAttributes }) {
-        return [
-            "ul",
-            { ...HTMLAttributes, class: "list-disc pl-6" },
-            0,
-        ];
+        return ["ul", { ...HTMLAttributes, class: "list-disc ml-5" }, 0];
     },
 });
 
 const TailwindOrderedList = OrderedList.extend({
     renderHTML({ HTMLAttributes }) {
-        return [
-            "ol",
-            { ...HTMLAttributes, class: "list-decimal pl-6" },
-            0,
-        ];
+        return ["ol", { ...HTMLAttributes, class: "list-decimal ml-5" }, 0];
     },
 });
 
-/**
- * Polished TipTap editor with Tailwind‑styled lists & smooth focus.
- * Make sure you have:
- *   npm i @tiptap/extension-placeholder @tiptap/extension-bullet-list @tiptap/extension-ordered-list
- */
 export default function RichTextEditor({ value, onChange, placeholder = "" }) {
     const editor = useEditor({
         extensions: [
-            StarterKit.configure({
-                bulletList: false, // disable default
-                orderedList: false,
-            }),
+            StarterKit.configure({ bulletList: false, orderedList: false }),
             TailwindBulletList,
             TailwindOrderedList,
             Placeholder.configure({ placeholder }),
@@ -46,16 +29,14 @@ export default function RichTextEditor({ value, onChange, placeholder = "" }) {
         editorProps: {
             attributes: {
                 class:
-                    "ProseMirror prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[120px] text-gray-800 dark:text-gray-200 px-3 py-2",
+                    "ProseMirror text-gray-800 dark:text-gray-200 focus:outline-none min-h-[120px] px-3 py-2",
             },
         },
         onUpdate: ({ editor }) => onChange(editor.getHTML()),
     });
 
     if (!editor) {
-        return (
-            <div className="border rounded-lg min-h-[120px] bg-white dark:bg-slate-800 animate-pulse" />
-        );
+        return <div className="border rounded-lg min-h-[120px] bg-white dark:bg-slate-800 animate-pulse" />;
     }
 
     const Btn = ({ isActive, label, onExec, children }) => (
@@ -76,7 +57,6 @@ export default function RichTextEditor({ value, onChange, placeholder = "" }) {
 
     return (
         <div className="border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 transition-all duration-150 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500">
-            {/* Toolbar */}
             <div className="flex gap-1 p-2 border-b border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100">
                 <Btn
                     isActive={editor.isActive("bold")}
@@ -95,23 +75,11 @@ export default function RichTextEditor({ value, onChange, placeholder = "" }) {
                 <Btn
                     isActive={editor.isActive("bulletList")}
                     label="Bullet list"
-                    onExec={() => {
-                        const ch = editor.chain().focus();
-                        if (editor.isEmpty) {
-                            ch.insertContent({
-                                type: "bulletList",
-                                content: [{ type: "listItem", content: [{ type: "paragraph" }] }],
-                            }).run();
-                        } else {
-                            ch.toggleBulletList().run();
-                        }
-                    }}
+                    onExec={() => editor.chain().focus().toggleBulletList().run()}
                 >
                     <List size={16} strokeWidth={2.5} />
                 </Btn>
             </div>
-
-            {/* Editable area */}
             <EditorContent editor={editor} />
         </div>
     );

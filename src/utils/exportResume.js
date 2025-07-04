@@ -2,19 +2,22 @@ import html2pdf from "html2pdf.js";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { saveAs } from "file-saver";
 
-/* ----------  Shared helpers  ---------- */
-
 const titleMap = {
-    summary:        "Summary",
-    experience:     "Experience",
-    skills:         "Skills",
-    education:      "Education",
-    links:          "Links",
+    summary: "Summary",
+    experience: "Experience",
+    skills: "Skills",
+    education: "Education",
+    links: "Links",
     certifications: "Certifications & Awards",
 };
 
-/* ----------  Build a plain HTML fragment for html2pdf  ---------- */
-function buildExportHTML({ data, sectionOrder, visibleSections, theme }) {
+function stripHtmlTags(html) {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+}
+
+export function exportResumePDF({ data, sectionOrder, visibleSections, theme }) {
     const wrap = document.createElement("div");
     wrap.className = `bg-white p-6 space-y-6 ${
         theme === "minimal"
@@ -33,7 +36,6 @@ function buildExportHTML({ data, sectionOrder, visibleSections, theme }) {
 
     sectionOrder.forEach((key) => {
         if (!visibleSections[key] || !data[key]) return;
-
         const section = document.createElement("section");
         section.className = "space-y-1";
 
@@ -42,40 +44,23 @@ function buildExportHTML({ data, sectionOrder, visibleSections, theme }) {
         h3.className = "text-lg font-semibold";
         section.appendChild(h3);
 
-        /* content */
-        if (key === "links") {
+        if (key === "links" || key === "certifications") {
             const ul = document.createElement("ul");
             ul.className = "list-disc list-inside";
-            data.links.split(",").forEach((l) => {
+            data[key].split(",").forEach((item) => {
                 const li = document.createElement("li");
-                li.textContent = l.trim();
-                ul.appendChild(li);
-            });
-            section.appendChild(ul);
-        } else if (key === "certifications") {
-            const ul = document.createElement("ul");
-            ul.className = "list-disc list-inside";
-            data.certifications.split(",").forEach((c) => {
-                const li = document.createElement("li");
-                li.textContent = c.trim();
+                li.textContent = item.trim();
                 ul.appendChild(li);
             });
             section.appendChild(ul);
         } else {
             const p = document.createElement("p");
-            p.textContent = data[key];
+            p.textContent = stripHtmlTags(data[key]);
             section.appendChild(p);
         }
 
         wrap.appendChild(section);
     });
-
-    return wrap;
-}
-
-/* ----------  Export PDF  ---------- */
-export function exportResumePDF({ data, sectionOrder, visibleSections, theme }) {
-    const htmlNode = buildExportHTML({ data, sectionOrder, visibleSections, theme });
 
     html2pdf()
         .set({
@@ -85,11 +70,10 @@ export function exportResumePDF({ data, sectionOrder, visibleSections, theme }) 
             html2canvas: { scale: 2 },
             jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
         })
-        .from(htmlNode)
+        .from(wrap)
         .save();
 }
 
-/* ----------  Export DOCX  ---------- */
 export function exportResumeDOCX({ data, sectionOrder, visibleSections }) {
     const included = sectionOrder.filter((k) => data[k] && visibleSections[k]);
 
@@ -99,11 +83,7 @@ export function exportResumeDOCX({ data, sectionOrder, visibleSections }) {
                 children: [
                     new Paragraph({
                         children: [
-                            new TextRun({
-                                text: data.name || "Resume",
-                                bold: true,
-                                size: 32,
-                            }),
+                            new TextRun({ text: data.name || "Resume", bold: true, size: 32 }),
                         ],
                         spacing: { after: 300 },
                     }),
@@ -114,28 +94,20 @@ export function exportResumeDOCX({ data, sectionOrder, visibleSections }) {
                             spacing: { after: 100 },
                         });
 
+                        const cleanText = stripHtmlTags(data[key]);
+
                         const content =
                             key === "links"
-                                ? data.links.split(",").map(
-                                    (link) =>
-                                        new Paragraph({
-                                            text: link.trim(),
-                                            style: "Normal",
-                                            spacing: { after: 100 },
-                                        })
+                                ? data.links.split(",").map((link) =>
+                                    new Paragraph({ text: link.trim(), spacing: { after: 100 } })
                                 )
                                 : key === "certifications"
-                                    ? data.certifications.split(",").map(
-                                        (c) =>
-                                            new Paragraph({
-                                                text: c.trim(),
-                                                bullet: { level: 0 },
-                                            })
+                                    ? data.certifications.split(",").map((c) =>
+                                        new Paragraph({ text: c.trim(), bullet: { level: 0 } })
                                     )
                                     : [
                                         new Paragraph({
-                                            text: data[key],
-                                            style: "Normal",
+                                            text: cleanText,
                                             spacing: { after: 200 },
                                         }),
                                     ];
@@ -147,5 +119,5 @@ export function exportResumeDOCX({ data, sectionOrder, visibleSections }) {
         ],
     });
 
-    Packer.toBlob(doc).then((b) => saveAs(b, `${data.name || "resume"}.docx`));
+    Packer.toBlob(doc).then((blob) => saveAs(blob, `${data.name || "resume"}.docx`));
 }
