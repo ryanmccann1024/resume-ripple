@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/resume-ripple/static/css/main.aaafcec1.css",
-    "main.js": "/resume-ripple/static/js/main.c72c1ed1.js",
+    "main.css": "/resume-ripple/static/css/main.0095b009.css",
+    "main.js": "/resume-ripple/static/js/main.e8dcc0c9.js",
     "static/js/977.7c614c5c.chunk.js": "/resume-ripple/static/js/977.7c614c5c.chunk.js",
     "static/js/455.4cfd72ac.chunk.js": "/resume-ripple/static/js/455.4cfd72ac.chunk.js",
     "static/js/453.e849c61e.chunk.js": "/resume-ripple/static/js/453.e849c61e.chunk.js",
     "index.html": "/resume-ripple/index.html",
-    "main.aaafcec1.css.map": "/resume-ripple/static/css/main.aaafcec1.css.map",
-    "main.c72c1ed1.js.map": "/resume-ripple/static/js/main.c72c1ed1.js.map",
+    "main.0095b009.css.map": "/resume-ripple/static/css/main.0095b009.css.map",
+    "main.e8dcc0c9.js.map": "/resume-ripple/static/js/main.e8dcc0c9.js.map",
     "977.7c614c5c.chunk.js.map": "/resume-ripple/static/js/977.7c614c5c.chunk.js.map",
     "455.4cfd72ac.chunk.js.map": "/resume-ripple/static/js/455.4cfd72ac.chunk.js.map",
     "453.e849c61e.chunk.js.map": "/resume-ripple/static/js/453.e849c61e.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.aaafcec1.css",
-    "static/js/main.c72c1ed1.js"
+    "static/css/main.0095b009.css",
+    "static/js/main.e8dcc0c9.js"
   ]
 }
