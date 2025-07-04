@@ -23,12 +23,15 @@ function cloneResume() {
     // Remove UI controls
     clone.querySelectorAll(".screen-only").forEach((el) => el.remove());
 
-    // Inline bullet style for PDF
-    clone.querySelectorAll("ul").forEach((ul) => {
-        ul.style.listStyleType = "disc";
-        ul.style.listStylePosition = "inside";
-        ul.style.marginLeft = "0";
-        ul.style.paddingLeft = "1em";
+    clone.querySelectorAll("ul").forEach(ul => {
+        ul.querySelectorAll("li").forEach(li => {
+            const p = document.createElement("p");
+            p.textContent = `• ${li.textContent.trim()}`;
+            p.style.margin = "0 0 0.3em 1em";
+            p.style.lineHeight = "1.4";
+            ul.parentNode.insertBefore(p, ul);
+        });
+        ul.remove();
     });
 
     clone.querySelectorAll(".hidden-section").forEach((el) => el.remove());
