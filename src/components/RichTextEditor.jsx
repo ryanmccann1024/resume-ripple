@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from "@tiptap/react";
+import { Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import BulletList from "@tiptap/extension-bullet-list";
@@ -17,6 +18,28 @@ const TailwindOrderedList = OrderedList.extend({
     },
 });
 
+const FixListBackspace = Extension.create({
+    addKeyboardShortcuts() {
+        return {
+            Backspace: ({ editor }) => {
+                const { $from } = editor.state.selection;
+                const parent = $from.node(-1);
+                const isListItem = parent.type.name === "listItem";
+
+                if (isListItem && $from.parentOffset === 0) {
+                    // We're at the start of a list item
+                    return editor
+                        .chain()
+                        .liftListItem("listItem")
+                        .run();
+                }
+
+                return false; // fallback to default
+            },
+        };
+    },
+});
+
 export default function RichTextEditor({ value, onChange, placeholder = "" }) {
     const editor = useEditor({
         extensions: [
@@ -24,6 +47,7 @@ export default function RichTextEditor({ value, onChange, placeholder = "" }) {
             TailwindBulletList,
             TailwindOrderedList,
             Placeholder.configure({ placeholder }),
+            FixListBackspace,
         ],
         content: value || "",
         editorProps: {

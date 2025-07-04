@@ -27,12 +27,22 @@ function cloneResume() {
     clone.querySelectorAll("ul").forEach((ul) => {
         ul.style.listStyleType = "disc";
         ul.style.listStylePosition = "inside";
-        ul.style.marginLeft = "1.5em";
-        ul.style.paddingLeft = "0";
+        ul.style.marginLeft = "0";
+        ul.style.paddingLeft = "1em";
     });
 
+    clone.querySelectorAll(".hidden-section").forEach((el) => el.remove());
+
     clone.querySelectorAll("li").forEach((li) => {
-        li.style.marginBottom = "0.25em";
+        li.style.marginBottom = "0.4em";
+        li.style.display = "list-item";
+        li.style.lineHeight = "1.4";
+    });
+
+    // Inject page-break style to children
+    clone.querySelectorAll(":scope > *").forEach((el) => {
+        el.style.breakInside = "avoid";
+        el.style.pageBreakInside = "avoid";
     });
 
     return clone;
@@ -46,9 +56,10 @@ export function exportResumePDF({ data, sectionOrder, visibleSections, theme }) 
         .set({
             margin: 0.5,
             filename: `${data.name || "resume"}.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2 },
+            image: { type: "jpeg", quality: 1.0 }, // Max image quality
+            html2canvas: { scale: 3, useCORS: true }, // Higher DPI
             jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+            pagebreak: { mode: ["avoid-all", "css", "legacy"] }, // Smart page breaks
         })
         .from(node)
         .save();

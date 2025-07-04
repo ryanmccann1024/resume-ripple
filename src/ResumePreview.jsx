@@ -27,8 +27,6 @@ export default function ResumePreview({
                                       }) {
     const { name } = data;
 
-    /* --------------------  EXPORT HANDLERS  -------------------- */
-    // Give React one paint to commit setState triggered by the last toggle.
     const handlePDF = () =>
         requestAnimationFrame(() =>
             exportResumePDF({ data, sectionOrder, visibleSections, theme })
@@ -39,7 +37,6 @@ export default function ResumePreview({
             exportResumeDOCX({ data, sectionOrder, visibleSections })
         );
 
-    /* ----------------------  HELPERS  ---------------------- */
     const titleMap = {
         summary: "Summary",
         experience: "Experience",
@@ -52,7 +49,6 @@ export default function ResumePreview({
     const renderContent = (key) => {
         if (!data[key]) return null;
 
-        // Skills remain a simple comma‑separated line; everything else may contain rich HTML.
         if (key === "skills") {
             return (
                 <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
@@ -69,10 +65,8 @@ export default function ResumePreview({
         );
     };
 
-    /* ---------------------------  UI  --------------------------- */
     return (
         <section className="max-w-2xl mx-auto px-4 py-12">
-            {/* Header & export buttons – screen-only so they never hit the PDF */}
             <div className="flex justify-between items-center mb-6 screen-only gap-2 flex-wrap">
                 <h2 className="text-2xl font-bold">Live Resume Preview</h2>
                 <div className="flex gap-2">
@@ -111,11 +105,32 @@ export default function ResumePreview({
                             {sectionOrder.map((sectionKey) => {
                                 if (!data[sectionKey]) return null;
 
+                                if (!visibleSections[sectionKey]) {
+                                    return (
+                                        <motion.div
+                                            key={sectionKey}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 0.5 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.4, ease: "easeInOut" }}
+                                            className="screen-only italic text-gray-400 flex justify-between items-center border border-dashed border-gray-300 p-2 rounded"
+                                        >
+                                            <span>
+                                                {titleMap[sectionKey]} (Hidden)
+                                            </span>
+                                            <div className="screen-only">
+                                                <ToggleSwitch
+                                                    checked={false}
+                                                    onChange={() => toggleSectionVisibility(sectionKey)}
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    );
+                                }
+
                                 return (
                                     <SortableItem
-                                        key={
-                                            sectionKey + (visibleSections[sectionKey] ? "-on" : "-off")
-                                        }
+                                        key={sectionKey}
                                         id={sectionKey}
                                     >
                                         <motion.section
@@ -123,16 +138,14 @@ export default function ResumePreview({
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -10 }}
-                                            transition={{ duration: 0.2 }}
-                                            className={
-                                                !visibleSections[sectionKey]
-                                                    ? "opacity-50 hidden-section"
-                                                    : ""
-                                            }
+                                            transition={{ duration: 0.4, ease: "easeInOut" }}
+                                            style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
                                         >
                                             <div className="flex justify-between items-center mb-1">
                                                 <div className="flex items-center gap-1">
-                                                    <span className="text-gray-400 screen-only">☰</span>
+                                                    <span className="text-gray-400 screen-only cursor-grab">
+                                                        ☰
+                                                    </span>
                                                     <h3
                                                         className={`text-lg font-semibold ${
                                                             theme === "modern"
@@ -144,20 +157,15 @@ export default function ResumePreview({
                                                     </h3>
                                                 </div>
 
-                                                {/* Toggle wrapped in screen-only so it never lands in the export */}
                                                 <div className="screen-only">
                                                     <ToggleSwitch
-                                                        checked={visibleSections[sectionKey]}
+                                                        checked={true}
                                                         onChange={() => toggleSectionVisibility(sectionKey)}
                                                     />
                                                 </div>
                                             </div>
 
-                                            {visibleSections[sectionKey] ? (
-                                                renderContent(sectionKey)
-                                            ) : (
-                                                <p className="italic text-gray-400">(Hidden)</p>
-                                            )}
+                                            {renderContent(sectionKey)}
                                         </motion.section>
                                     </SortableItem>
                                 );

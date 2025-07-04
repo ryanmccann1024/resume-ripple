@@ -35,30 +35,50 @@ function App() {
     ]);
 
     useEffect(() => {
-        const saved = localStorage.getItem("resumeData");
-        if (saved) {
-            setResumeData(JSON.parse(saved));
+        document.title = "Resume Ripple";
+    }, []);
+
+    useEffect(() => {
+        const savedData = localStorage.getItem("resumeData");
+        if (savedData) {
+            setResumeData(JSON.parse(savedData));
+        }
+
+        const savedVisible = localStorage.getItem("visibleSections");
+        if (savedVisible) {
+            setVisibleSections(JSON.parse(savedVisible));
+        }
+
+        const savedOrder = localStorage.getItem("sectionOrder");
+        if (savedOrder) {
+            setSectionOrder(JSON.parse(savedOrder));
         }
     }, []);
+
 
     useEffect(() => {
         localStorage.setItem("resumeData", JSON.stringify(resumeData));
     }, [resumeData]);
 
+    useEffect(() => {
+        localStorage.setItem("visibleSections", JSON.stringify(visibleSections));
+    }, [visibleSections]);
+
+    useEffect(() => {
+        localStorage.setItem("sectionOrder", JSON.stringify(sectionOrder));
+    }, [sectionOrder]);
+
+
     const toggleSectionVisibility = (key) => {
         setVisibleSections((prevVisible) => {
             const isNowVisible = !prevVisible[key];
 
-            setSectionOrder((prevOrder) => {
-                const filtered = prevOrder.filter((item) => item !== key);
-                if (isNowVisible) {
-                    // Insert at top for simplicity
-                    return [key, ...filtered];
-                } else {
-                    // Move to end
-                    return [...filtered, key];
-                }
-            });
+            const filtered = sectionOrder.filter((item) => item !== key);
+            const newOrder = isNowVisible
+                ? [key, ...filtered]
+                : [...filtered, key];
+
+            setSectionOrder(newOrder);
 
             return {
                 ...prevVisible,
@@ -66,6 +86,9 @@ function App() {
             };
         });
     };
+
+    console.log("🚀 Render: sectionOrder", sectionOrder);
+    console.log("🚀 Render: visibleSections", visibleSections);
 
     return (
         <main className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white transition-colors duration-500 animate-fadeIn">

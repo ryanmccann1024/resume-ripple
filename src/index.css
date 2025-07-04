@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ensure sections/blocks avoid being cut in the middle */
+#resume-content > * {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+
 body {
   @apply bg-white text-gray-900 dark:bg-slate-900 dark:text-white transition-colors duration-300;
 }

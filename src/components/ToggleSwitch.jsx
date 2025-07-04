@@ -1,5 +1,8 @@
 // ToggleSwitch.jsx
 export default function ToggleSwitch({ checked, onChange }) {
+
+    console.log("ToggleSwitch fired");
+
     return (
         <label className="relative inline-block w-10 cursor-pointer select-none">
             {/* hidden checkbox that becomes the peer */}
