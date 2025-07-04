@@ -1,10 +1,7 @@
 import Button from "./components/Button";
 import { motion, AnimatePresence } from "framer-motion";
 
-import {
-    DndContext,
-    closestCenter,
-} from "@dnd-kit/core";
+import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
     SortableContext,
     arrayMove,
@@ -42,14 +39,46 @@ export default function ResumePreview({
             exportResumeDOCX({ data, sectionOrder, visibleSections })
         );
 
+    /* ----------------------  HELPERS  ---------------------- */
+    const titleMap = {
+        summary: "Summary",
+        experience: "Experience",
+        skills: "Skills",
+        education: "Education",
+        links: "Links",
+        certifications: "Certifications & Awards",
+    };
+
+    const renderContent = (key) => {
+        if (!data[key]) return null;
+
+        // Skills remain a simple comma‑separated line; everything else may contain rich HTML.
+        if (key === "skills") {
+            return (
+                <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
+                    {data.skills}
+                </p>
+            );
+        }
+
+        return (
+            <div
+                className="text-gray-800 dark:text-gray-200 prose prose-sm sm:prose-base max-w-none"
+                dangerouslySetInnerHTML={{ __html: data[key] }}
+            />
+        );
+    };
+
     /* ---------------------------  UI  --------------------------- */
     return (
         <section className="max-w-2xl mx-auto px-4 py-12">
             {/* Header & export buttons – screen-only so they never hit the PDF */}
-            <div className="flex justify-between items-center mb-6 screen-only">
+            <div className="flex justify-between items-center mb-6 screen-only gap-2 flex-wrap">
                 <h2 className="text-2xl font-bold">Live Resume Preview</h2>
-                <Button onClick={handlePDF}>Export PDF</Button>
-                <Button onClick={handleDOCX}>Export DOCX</Button>
+                <div className="flex gap-2">
+                    <Button onClick={handlePDF}>Export PDF</Button>
+                    <Button onClick={handleDOCX}>Export DOCX</Button>
+                </div>
             </div>
 
             <div
@@ -81,43 +110,6 @@ export default function ResumePreview({
                         <AnimatePresence mode="popLayout">
                             {sectionOrder.map((sectionKey) => {
                                 if (!data[sectionKey]) return null;
-
-                                const titleMap = {
-                                    summary: "Summary",
-                                    experience: "Experience",
-                                    skills: "Skills",
-                                    education: "Education",
-                                    links: "Links",
-                                    certifications: "Certifications & Awards",
-                                };
-
-                                const content =
-                                    sectionKey === "links" ? (
-                                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                                            {data.links.split(",").map((link, i) => (
-                                                <li key={i}>
-                                                    <a
-                                                        href={link.trim()}
-                                                        className="text-blue-600 hover:underline break-words"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        {link.trim()}
-                                                    </a>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : sectionKey === "certifications" ? (
-                                        <ul className="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-1">
-                                            {data.certifications.split(",").map((item, i) => (
-                                                <li key={i}>{item.trim()}</li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
-                                            {data[sectionKey]}
-                                        </p>
-                                    );
 
                                 return (
                                     <SortableItem
@@ -162,7 +154,7 @@ export default function ResumePreview({
                                             </div>
 
                                             {visibleSections[sectionKey] ? (
-                                                content
+                                                renderContent(sectionKey)
                                             ) : (
                                                 <p className="italic text-gray-400">(Hidden)</p>
                                             )}
