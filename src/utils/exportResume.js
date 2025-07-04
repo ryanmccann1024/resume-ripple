@@ -1,66 +1,46 @@
+// -----------------------------------------------------------------------------
+// Export the *exact DOM you preview* (`#resume-content`) so every <strong>, <em>,
+// bullet-list & Tailwind class is preserved visually in PDF, cleanly in DOCX.
+//
+// 1. PDF  → html2pdf.js (pixel-perfect snapshot with inline bullet fix)
+// 2. DOCX → docx (structured output built from DOM — no raw HTML leaks)
+//
+// Install:
+//   npm i html2pdf.js docx file-saver
+// -----------------------------------------------------------------------------
+
 import html2pdf from "html2pdf.js";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { saveAs } from "file-saver";
 
-const titleMap = {
-    summary: "Summary",
-    experience: "Experience",
-    skills: "Skills",
-    education: "Education",
-    links: "Links",
-    certifications: "Certifications & Awards",
-};
+/* ----------  Clone and style for PDF  ---------- */
+function cloneResume() {
+    const original = document.getElementById("resume-content");
+    if (!original) throw new Error("#resume-content not found – ensure the preview is mounted.");
 
-function stripHtmlTags(html) {
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    return div.textContent || div.innerText || "";
+    const clone = original.cloneNode(true);
+
+    // Remove UI controls
+    clone.querySelectorAll(".screen-only").forEach((el) => el.remove());
+
+    // Inline bullet style for PDF
+    clone.querySelectorAll("ul").forEach((ul) => {
+        ul.style.listStyleType = "disc";
+        ul.style.listStylePosition = "inside";
+        ul.style.marginLeft = "1.5em";
+        ul.style.paddingLeft = "0";
+    });
+
+    clone.querySelectorAll("li").forEach((li) => {
+        li.style.marginBottom = "0.25em";
+    });
+
+    return clone;
 }
 
+/* ----------  Export PDF  ---------- */
 export function exportResumePDF({ data, sectionOrder, visibleSections, theme }) {
-    const wrap = document.createElement("div");
-    wrap.className = `bg-white p-6 space-y-6 ${
-        theme === "minimal"
-            ? "text-sm leading-snug"
-            : theme === "modern"
-                ? "font-sans text-base leading-relaxed"
-                : ""
-    }`;
-
-    if (data.name) {
-        const h1 = document.createElement("h1");
-        h1.textContent = data.name;
-        h1.className = "text-3xl font-bold";
-        wrap.appendChild(h1);
-    }
-
-    sectionOrder.forEach((key) => {
-        if (!visibleSections[key] || !data[key]) return;
-        const section = document.createElement("section");
-        section.className = "space-y-1";
-
-        const h3 = document.createElement("h3");
-        h3.textContent = titleMap[key];
-        h3.className = "text-lg font-semibold";
-        section.appendChild(h3);
-
-        if (key === "links" || key === "certifications") {
-            const ul = document.createElement("ul");
-            ul.className = "list-disc list-inside";
-            data[key].split(",").forEach((item) => {
-                const li = document.createElement("li");
-                li.textContent = item.trim();
-                ul.appendChild(li);
-            });
-            section.appendChild(ul);
-        } else {
-            const p = document.createElement("p");
-            p.textContent = stripHtmlTags(data[key]);
-            section.appendChild(p);
-        }
-
-        wrap.appendChild(section);
-    });
+    const node = cloneResume();
 
     html2pdf()
         .set({
@@ -70,54 +50,87 @@ export function exportResumePDF({ data, sectionOrder, visibleSections, theme }) 
             html2canvas: { scale: 2 },
             jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
         })
-        .from(wrap)
+        .from(node)
         .save();
 }
 
+/* ----------  Export DOCX  ---------- */
 export function exportResumeDOCX({ data, sectionOrder, visibleSections }) {
-    const included = sectionOrder.filter((k) => data[k] && visibleSections[k]);
+    const resumeNode = document.getElementById("resume-content");
+    if (!resumeNode) throw new Error("#resume-content not found – ensure the preview is mounted.");
+
+    const clone = resumeNode.cloneNode(true);
+    clone.querySelectorAll(".screen-only").forEach((el) => el.remove());
+
+    const children = [];
+
+    // Name
+    const nameNode = clone.querySelector("h1");
+    const nameText = nameNode ? nameNode.textContent.trim() : "Resume";
+
+    children.push(
+        new Paragraph({
+            children: [
+                new TextRun({
+                    text: nameText,
+                    bold: true,
+                    size: 32,
+                }),
+            ],
+            spacing: { after: 300 },
+        })
+    );
+
+    // Sections
+    clone.querySelectorAll("section").forEach((sec) => {
+        const title = sec.querySelector("h3");
+        if (title) {
+            children.push(
+                new Paragraph({
+                    text: title.textContent.trim(),
+                    heading: "Heading2",
+                    spacing: { after: 100 },
+                })
+            );
+        }
+
+        // Normal paragraphs
+        sec.querySelectorAll("p").forEach((p) => {
+            const text = p.textContent.trim();
+            if (text) {
+                children.push(
+                    new Paragraph({
+                        text,
+                        spacing: { after: 100 },
+                    })
+                );
+            }
+        });
+
+        // Bullet lists
+        sec.querySelectorAll("ul").forEach((ul) => {
+            ul.querySelectorAll("li").forEach((li) => {
+                const text = li.textContent.trim();
+                if (text) {
+                    children.push(
+                        new Paragraph({
+                            text,
+                            bullet: { level: 0 },
+                            spacing: { after: 100 },
+                        })
+                    );
+                }
+            });
+        });
+    });
 
     const doc = new Document({
         sections: [
             {
-                children: [
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: data.name || "Resume", bold: true, size: 32 }),
-                        ],
-                        spacing: { after: 300 },
-                    }),
-                    ...included.flatMap((key) => {
-                        const title = new Paragraph({
-                            text: titleMap[key],
-                            heading: "Heading2",
-                            spacing: { after: 100 },
-                        });
-
-                        const cleanText = stripHtmlTags(data[key]);
-
-                        const content =
-                            key === "links"
-                                ? data.links.split(",").map((link) =>
-                                    new Paragraph({ text: link.trim(), spacing: { after: 100 } })
-                                )
-                                : key === "certifications"
-                                    ? data.certifications.split(",").map((c) =>
-                                        new Paragraph({ text: c.trim(), bullet: { level: 0 } })
-                                    )
-                                    : [
-                                        new Paragraph({
-                                            text: cleanText,
-                                            spacing: { after: 200 },
-                                        }),
-                                    ];
-
-                        return [title, ...content];
-                    }),
-                ],
+                children,
             },
         ],
     });
 
-    Packer.toBlob(doc).then((blob) => saveAs(blob, `${data.name || "resume"}.docx`));
+    Packer.toBlob(doc).then((b) => saveAs(b, `${nameText}.docx`));
 }
